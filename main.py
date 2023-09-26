@@ -5,6 +5,9 @@ from bleak import BleakScanner, BleakClient
 DEVICE_NAME = 'M02 Pro'
 CHARACTERISTIC_UUID_WRITE = '0000ff02-0000-1000-8000-00805f9b34fb'
 
+ESC = b'\x1B'
+COMMAND_FEED_PAPER = ESC + b'd'  # ESC d
+
 
 async def main():
     # scan and connect
@@ -28,7 +31,7 @@ async def main():
 async def feed(client: BleakClient, line: int = 1):
     await client.write_gatt_char(
         char_specifier=CHARACTERISTIC_UUID_WRITE,
-        data=b'\x1b\x64' + line.to_bytes(1, 'little')
+        data=COMMAND_FEED_PAPER + line.to_bytes(1, 'little')
     )
 
 
