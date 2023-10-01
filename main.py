@@ -10,6 +10,7 @@ CONNECTION_RETRY_MAX_COUNT = 5
 
 ESC = b'\x1B'
 COMMAND_FEED_PAPER = ESC + b'd'  # ESC d
+COMMAND_INIT_PRINTER = ESC + b'@'  # ESC @
 
 
 async def main():
@@ -23,7 +24,8 @@ async def main():
 
     # print
     async with BleakClient(device) as client:
-        await feed(client, 1)
+        # await feed(client, 1)
+        await init_printer(client=client)
 
     print('disconnect.')
 
@@ -39,6 +41,14 @@ async def connect() -> Optional[BLEDevice]:
         retry_count += 1
 
     return device
+
+
+async def init_printer(client: BleakClient):
+    print(f'init printer: {client.address}')
+    await client.write_gatt_char(
+        char_specifier=CHARACTERISTIC_UUID_WRITE,
+        data=COMMAND_INIT_PRINTER
+    )
 
 
 async def feed(client: BleakClient, line: int = 1):
