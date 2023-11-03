@@ -8,9 +8,11 @@ CHARACTERISTIC_UUID_WRITE = '0000ff02-0000-1000-8000-00805f9b34fb'
 
 CONNECTION_RETRY_MAX_COUNT = 5
 
-ESC = b'\x1B'
+ESC = b'\x1b'
+GS = b'\x1d'
 COMMAND_FEED_PAPER = ESC + b'd'  # ESC d
-COMMAND_INIT_PRINTER = ESC + b'@'  # ESC @
+COMMAND_INIT_PRINTER = ESC + b'@' + b'\x1f\x11\x02\x04'  # ESC @ + init params(Probably M02 specifications)
+COMMAND_PRINT_RASTER_IMAGE = GS + b'v0'  # GS v0
 
 
 async def main():
@@ -24,8 +26,12 @@ async def main():
 
     # print
     async with BleakClient(device) as client:
-        # await feed(client, 1)
         await init_printer(client=client)
+        await print_line(client=client)
+        await feed(client=client, line=3)
+        await print_line(client=client, line_height=20)
+        # wait a little to avoid disconnect
+        await asyncio.sleep(2)
 
     print('disconnect.')
 
@@ -48,6 +54,32 @@ async def init_printer(client: BleakClient):
     await client.write_gatt_char(
         char_specifier=CHARACTERISTIC_UUID_WRITE,
         data=COMMAND_INIT_PRINTER
+    )
+
+
+async def print_line(client: BleakClient, line_height: int = 1):
+    print('print line')
+
+    # 1 line = 72 bytes x 8 bit = 576 dots
+    byte_per_line = 72
+
+    # send print command (GS v0)
+    command = COMMAND_PRINT_RASTER_IMAGE \
+              + int(0).to_bytes(1, byteorder="little") \
+              + int(byte_per_line).to_bytes(2, byteorder="little") \
+              + int(line_height).to_bytes(2, byteorder="little")
+    await client.write_gatt_char(
+        char_specifier=CHARACTERISTIC_UUID_WRITE,
+        data=command,
+        response=True
+    )
+
+    # send print data
+    line_data = bytearray([0xff] * byte_per_line * line_height)
+    await client.write_gatt_char(
+        char_specifier=CHARACTERISTIC_UUID_WRITE,
+        data=line_data,
+        response=True
     )
 
 
