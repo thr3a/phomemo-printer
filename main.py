@@ -51,10 +51,7 @@ async def connect() -> Optional[BLEDevice]:
 
 async def init_printer(client: BleakClient):
     print(f'init printer: {client.address}')
-    await client.write_gatt_char(
-        char_specifier=CHARACTERISTIC_UUID_WRITE,
-        data=COMMAND_INIT_PRINTER
-    )
+    await send_command(client=client, command_data=COMMAND_INIT_PRINTER)
 
 
 async def print_line(client: BleakClient, line_height: int = 1):
@@ -68,27 +65,21 @@ async def print_line(client: BleakClient, line_height: int = 1):
               + int(0).to_bytes(1, byteorder="little") \
               + int(byte_per_line).to_bytes(2, byteorder="little") \
               + int(line_height).to_bytes(2, byteorder="little")
-    await client.write_gatt_char(
-        char_specifier=CHARACTERISTIC_UUID_WRITE,
-        data=command,
-        response=True
-    )
+    await send_command(client=client, command_data=command)
 
     # send print data
     line_data = bytearray([0xff] * byte_per_line * line_height)
-    await client.write_gatt_char(
-        char_specifier=CHARACTERISTIC_UUID_WRITE,
-        data=line_data,
-        response=True
-    )
+    await send_command(client=client, command_data=line_data)
 
 
 async def feed(client: BleakClient, line: int = 1):
     print(f'feed paper: {line} lines')
-    await client.write_gatt_char(
-        char_specifier=CHARACTERISTIC_UUID_WRITE,
-        data=COMMAND_FEED_PAPER + line.to_bytes(1, 'little')
-    )
+    command = COMMAND_FEED_PAPER + line.to_bytes(1, 'little')
+    await send_command(client=client, command_data=command)
+
+
+async def send_command(client: BleakClient, command_data):
+    await client.write_gatt_char(char_specifier=CHARACTERISTIC_UUID_WRITE, data=command_data, response=True)
 
 
 if __name__ == "__main__":
