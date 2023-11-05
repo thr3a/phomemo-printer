@@ -3,7 +3,7 @@ from typing import Optional
 
 from bleak import BleakScanner, BleakClient, BLEDevice
 
-from bitmap_generator import text_to_bitmap
+from bitmap_generator import text_to_bitmap, img_to_bitmap
 
 DEVICE_NAME = 'M02 Pro'
 CHARACTERISTIC_UUID_WRITE = '0000ff02-0000-1000-8000-00805f9b34fb'
@@ -33,7 +33,8 @@ async def main():
     # print
     async with BleakClient(device) as client:
         await init_printer(client=client)
-        await print_text(client=client, text='Hello Phomemo M02Pro!', fontsize=24)
+        await print_text(client=client, text='Hello Phomemo M02Pro!', fontsize=32)
+        await print_image(client=client, image_path='sample.jpg')
         await feed(client=client, line=3)
         # wait a little to avoid disconnect
         await asyncio.sleep(2)
@@ -79,6 +80,23 @@ async def print_text(client: BleakClient, text: str, fontsize: int = 24):
 
     # generate text bitmap
     bitmap_data = text_to_bitmap(text=text, fontsize=fontsize)
+
+    # send print command (GS v0)
+    command = COMMAND_PRINT_RASTER_IMAGE \
+              + int(0).to_bytes(1, byteorder="little") \
+              + int(BYTE_PER_LINE).to_bytes(2, byteorder="little") \
+              + int(bitmap_data.height).to_bytes(2, byteorder="little")
+    await send_command(client=client, command_data=command)
+
+    # send print data
+    await send_command(client=client, command_data=bitmap_data.bitmap)
+
+
+async def print_image(client: BleakClient, image_path: str):
+    print('print image')
+
+    # generate image bitmap
+    bitmap_data = img_to_bitmap(image_path)
 
     # send print command (GS v0)
     command = COMMAND_PRINT_RASTER_IMAGE \
