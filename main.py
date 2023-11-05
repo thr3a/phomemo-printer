@@ -76,7 +76,7 @@ async def print_line(client: BleakClient, line_height: int = 1):
 
 
 async def print_text(client: BleakClient, text: str, fontsize: int = 24):
-    print('print text')
+    print(f'print text: {text}')
 
     # generate text bitmap
     bitmap_data = text_to_bitmap(text=text, fontsize=fontsize)
@@ -93,7 +93,7 @@ async def print_text(client: BleakClient, text: str, fontsize: int = 24):
 
 
 async def print_image(client: BleakClient, image_path: str):
-    print('print image')
+    print(f'print image: {image_path}')
 
     # generate image bitmap
     bitmap_data = img_to_bitmap(image_path)
