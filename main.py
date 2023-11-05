@@ -3,10 +3,8 @@ from typing import Optional
 
 from bleak import BleakScanner, BleakClient, BLEDevice
 
+from PhomemoM02Pro_constants import *
 from bitmap_generator import text_to_bitmap, img_to_bitmap
-
-DEVICE_NAME = 'M02 Pro'
-CHARACTERISTIC_UUID_WRITE = '0000ff02-0000-1000-8000-00805f9b34fb'
 
 CONNECTION_RETRY_MAX_COUNT = 5
 
@@ -15,10 +13,6 @@ GS = b'\x1d'
 COMMAND_FEED_PAPER = ESC + b'd'  # ESC d
 COMMAND_INIT_PRINTER = ESC + b'@' + b'\x1f\x11\x02\x04'  # ESC @ + init params(Probably M02 specifications)
 COMMAND_PRINT_RASTER_IMAGE = GS + b'v0'  # GS v0
-
-# 1 line = 72 bytes x 8 bit = 576 dots
-DOT_PER_LINE = 576
-BYTE_PER_LINE = 72
 
 
 async def main():
