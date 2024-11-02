@@ -5,6 +5,7 @@ from bleak import BleakScanner, BleakClient, BLEDevice
 
 from PhomemoM02Pro_constants import *
 from bitmap_generator import text_to_bitmap, img_to_bitmap
+from receipt import create_receipt
 
 CONNECTION_RETRY_MAX_COUNT = 5
 
@@ -27,8 +28,8 @@ async def main():
     # print
     async with BleakClient(device) as client:
         await init_printer(client=client)
-        await print_text(client=client, text='Hello Phomemo M02Pro!', fontsize=32)
-        await print_image(client=client, image_path='sample.jpg')
+        # await print_text(client=client, text='Hello Phomemo M02Pro!', fontsize=32)
+        await print_image(client=client, image_path='receipt.png')
         await feed(client=client, line=3)
         # wait a little to avoid disconnect
         await asyncio.sleep(2)
@@ -114,4 +115,5 @@ async def send_command(client: BleakClient, command_data):
 
 
 if __name__ == "__main__":
+    create_receipt()
     asyncio.run(main())
