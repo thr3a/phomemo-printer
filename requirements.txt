@@ -6,4 +6,3 @@ pyobjc-framework-Cocoa==9.2
 pyobjc-framework-CoreBluetooth==9.2
 pyobjc-framework-libdispatch==9.2
 typing_extensions==4.8.0
-numpy
